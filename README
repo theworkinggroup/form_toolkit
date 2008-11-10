@@ -1,0 +1,13 @@
+FormToolkit
+===========
+
+FormToolkit is a Rails plugin to make creating and managing forms easier.
+
+There are three basic form types:
+
+ * Basic - Standard <form> element with submission by HTTP.
+ * AjaxSubmit - Standard <form> with a remote XHR call on submit.
+ * LiveEdit - Each field independently managed and submitted on change.
+
+Copyright (c) 2008 The Working Group
+http://theworkinggroup.ca/
