@@ -1,7 +1,7 @@
 class Object
   # NOTE: Expressed as a method and not an alias since Object#to_s is
   #       not an accurate representation for all subclasses.
-  def to_js(style = nil)
+  def to_js
     to_s
   end
 end
@@ -25,7 +25,7 @@ class String
 end
 
 class NilClass
-  def to_js(style = nil)
+  def to_js
     'null'
   end
 end

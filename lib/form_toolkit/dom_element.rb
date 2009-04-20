@@ -35,7 +35,12 @@ class FormToolkit::DomElement < FormToolkit::Js::Scalar
   ).inject({ }) { |h,v| h[v] = true; h }
   
   def to_js(style = ?')
-    "$(#{@value.to_js(style)})"
+	  case (FormToolkit.framework)
+    when :jquery:
+      "$(#{('#' + @value.gsub(/:/, '\\:')).to_js(style)})"
+    else
+      "$(#{@value.to_js(style)})"
+    end
   end
   
   alias_method :dom_id, :to_s

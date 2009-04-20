@@ -15,7 +15,12 @@ module FormToolkit::DomId
     end
 
     def input_name(type)
-      "#{class_name.underscore}[#{type}]"
+      case (type)
+      when Array:
+        "#{class_name.to_s.split(/::/).first.underscore}#{type.collect { |n| "[#{n}]" }}"
+      else
+        "#{class_name.to_s.split(/::/).first.underscore}[#{type}]"
+      end
     end
 
   protected
@@ -26,16 +31,11 @@ module FormToolkit::DomId
   
   module InstanceMethods
 	  def element_name
-	    self.class.to_s.underscore
+	    self.class.to_s.split(/::/).first.underscore
     end
 
     def input_name(type)
-      case (type)
-      when Array:
-        "#{self.class.to_s.underscore}#{type.collect { |n| "[#{n}]" }}"
-      else
-        "#{self.class.to_s.underscore}[#{type}]"
-      end
+      self.class.input_name(type)
     end
     
   protected
@@ -67,8 +67,8 @@ module FormToolkit::DomId
 			FormToolkit::DomElement.new(type.blank? ? @dom_id : "#{@dom_id}#{separator}#{type}")
 		end
 
-		def element(type = nil)
-		  dom_id.to_js
+		def element(type = nil, separator = ':')
+		  dom_id(type, separator).to_js
 		end
 	end
 end

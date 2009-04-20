@@ -1,13 +1,11 @@
 module FormToolkit::TypeFor
   module Extensions
-    # >> Inclusion Hook -----------------------------------------------------
-
     def self.included(by_class)
       by_class.send(:extend, FormToolkit::TypeFor::ClassMethods)
       by_class.send(:include, FormToolkit::TypeFor::InstanceMethods)
     end
     
-    # >> Module Functions ---------------------------------------------------
+    # == Module Functions ===================================================
     
     def self.type_info(for_class)
       @type_info ||= { }
@@ -30,13 +28,14 @@ module FormToolkit::TypeFor
         end
       end
       
-      definition = on_class.columns.find { |c| c.name.to_sym == column }
-      
-      definition and definition.type
+      column_found =
+        on_class.columns.find do |c|
+          c.name.to_sym == column
+        end
+        
+      column_found and column_found.type
     end
   end
-  
-  # >> Extensions to ActiveRecord::Base -------------------------------------
   
   module ClassMethods
     def define_type_for(options)
@@ -55,22 +54,24 @@ module FormToolkit::TypeFor
     end
     
     def field_type(column)
-      case (column)
-      when :password, :password_confirmation:
-        :password
-      else
-        case (type_for(column))
-        when :text:
-          :text_area
-        when :file:
-          :file
-        when :password:
+      specified_type = type_for(column)
+
+      case (specified_type)
+      when nil:
+        case (column)
+        when :password, :password_confirmation:
           :password
-        when :boolean:
-          :check_box
         else
           :text
         end
+      when :boolean:
+        :check_box
+      when :text:
+        :text_area
+      when :string:
+        :text
+      else
+        specified_type
       end
     end
   end
