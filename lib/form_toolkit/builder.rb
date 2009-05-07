@@ -130,7 +130,7 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
     if (errors)
       error_msg = 
         case (only)
-        when :first:
+        when :first
           errors = errors.is_a?(String) ? errors : errors.first
           
           @template.capture(errors, &block) if (block_given?)
@@ -237,7 +237,9 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
     end
   end
 
-  def select_field(method, items, options = { }, html_options = { })
+  def select_field(method, items = nil, options = { }, html_options = { })
+    items ||= @object.class.send(:"#{method.to_s.sub(/_id$/, '')}_options_for_select")
+    
     options = prepare_options_for(:select, options)
     
     with_partial_wrapper(method, options) do
@@ -369,7 +371,7 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
     @object.errors.invalid?(@method)
   end
   
-  def errors(full_messages = true)
+  def error_messages(full_messages = true)
     messages = @object.errors.on(@method)
     
     return messages unless (full_messages)
@@ -377,9 +379,9 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
     using_label = @options[:label] || @object.label_for(@method)
   
     case (messages)
-    when String:
+    when String
       "#{using_label} #{messages}"
-    when Array:
+    when Array
       messages.collect do |message|
         "#{using_label} #{message}"
       end
@@ -387,13 +389,45 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
   end
 
   def progress(&block)
-    @template.tag(:div, :style => 'display:none', :class => 'form_progress', &block)
+    @template.content_tag(:div, :style => 'display:none', :class => 'form_progress', &block)
+  end
+  
+  def coach(method, options = nil)
+    @template.content_tag(:div, :style => 'display:none', :class => 'form_coach_text', :id => "form_coach_#{method}") do
+      case (options)
+      when String
+        options
+      when Hash
+        @template.render(options)
+      when nil
+        @template.render(:partial => "coach_#{method}", :object => self)
+      end
+    end
+  end
+  
+  def expand(label = 'Expand', conditions = nil, &block)
+    if (conditions and conditions.key?(:if) and conditions[:if] or conditions.key?(:unless) and !conditions[:unless])
+      @template.content_tag(:div, :class => 'form_expand') do
+        @template.capture(&block)
+      end
+    else
+      element_id = 'expand_' + String.rand(20)
+
+      @template.content_tag(:div, :class => 'form_expand') do
+        [
+          @template.link_to_function(label, "$('\##{element_id}').show();$(this).hide();$('\##{element_id} input:first').focus()", :class => 'form_expand_link'),
+          @template.content_tag(:div, :id => element_id, :style => 'display:none') do
+            @template.capture(&block)
+          end
+        ]
+      end
+    end
   end
   
 protected
   def prefix_for(method)
     case (method)
-    when Array:
+    when Array
       @prefix ? @prefix + method : method
     else
       @prefix ? @prefix + [ method ] : [ method ]
@@ -535,16 +569,16 @@ protected
   
   def resolve_method_to_value(method)
     case (method)
-    when Symbol, String:
+    when Symbol, String
       @object.respond_to?(method) ? @object.send(method) : nil
-    when Array:
+    when Array
       target = @object
       
       method.each do |call|
         case (target)
-        when Array, Hash:
+        when Array, Hash
           target = target[call]
-        when true, false, nil:
+        when true, false, nil
           return target
         else
           target = target.respond_to?(call) ? target.send(call) : nil

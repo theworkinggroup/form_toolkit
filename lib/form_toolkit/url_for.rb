@@ -34,7 +34,7 @@ module FormToolkit::UrlFor
     def controller_for
       @controller_for ||= 
         case (with_namespace = controller_namespace)
-        when nil, false:
+        when nil, false
           table_name
         else
           with_namespace.to_s + '/' + table_name
@@ -44,38 +44,59 @@ module FormToolkit::UrlFor
     def controller_for=(value)
       @controller_for = value
     end
+    
+    def url_for_options
+      nil
+    end
 
     def url_for(action = :index, options = { })
       # Map instance actions to class-level actions
       case (action)
-      when :show:
+      when :show
         action = :index
-      when :update:
+      when :update
         action = :create
       end
       
-      {
+      url_params = {
         :controller => controller_for,
         :action => action.to_s
-      }.merge(options)
+      }
+      
+      if (_options = url_for_options)
+        url_params.merge!(url_for_options)
+      end
+      
+      url_params.merge(options)
     end
   end
   
   module InstanceMethods
+    def url_for_options
+      nil
+    end
+
     def url_for(action = nil, options = { })
-      case (self.new_record?)
-      when true:
-        {
-          :controller => self.class.controller_for,
-          :action => (action || :create).to_s
-        }.merge(options)
-      else
-        {
-          :controller => self.class.controller_for,
-          :action => (action || :show).to_s,
-          :id => self.to_param
-        }.merge(options)
+      url_params =
+        case (self.new_record?)
+        when true
+          {
+            :controller => self.class.controller_for,
+            :action => (action || :create).to_s
+          }
+        else
+          {
+            :controller => self.class.controller_for,
+            :action => (action || :show).to_s,
+            :id => self.to_param
+          }
+        end
+
+      if (_options = url_for_options)
+        url_params.merge!(url_for_options)
       end
+      
+      url_params.merge(options)
     end
   end
 end

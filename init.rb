@@ -9,6 +9,7 @@ require 'form_toolkit/url_for'
 require 'active_record'
 
 class ActiveRecord::Base
+  include FormToolkit::DefaultValues::Extensions
   include FormToolkit::DomId::Extensions
   include FormToolkit::ParamHandler::Extensions
   include FormToolkit::LabelFor::Extensions
