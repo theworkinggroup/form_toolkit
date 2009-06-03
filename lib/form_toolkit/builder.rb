@@ -469,7 +469,7 @@ protected
   end
 
   def model_dom_id(method = nil)
-    @object.dom_id(prefix_for(method))
+    @object and @object.dom_id(prefix_for(method))
   end
 
   def with_input_wrapper(&block)
