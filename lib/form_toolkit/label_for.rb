@@ -8,20 +8,37 @@ module FormToolkit::LabelFor
   
   module ClassMethods
     def required_fields(*fields)
+      options = (fields.last.is_a?(Hash) and fields.pop or { })
+      
       case (fields.length)
-      when 0:
+      when 0
         @required_fields and @required_fields.keys or [ ]
       else
         @required_fields ||= { }
-      
+        
+        requirement = true
+        
+        if (options[:if])
+          requirement = options[:if].is_a?(Proc) ? options[:if] : lambda { |o| o.send(options[:if]) }
+        elsif (options[:unless])
+          requirement = options[:unless].is_a?(Proc) ? options[:unless] : lambda { |o| !o.send(options[:unless]) }
+        end
+        
         fields.collect(&:to_sym).each do |field|
-          @required_fields[field] = true
+          @required_fields[field] = requirement
         end
       end
     end
     
-    def required_field?(field)
-      @required_fields and @required_fields[field]
+    def required_field?(field, instance = nil)
+      req = (@required_fields and @required_fields[field])
+      
+      case (req)
+      when Proc
+        req.call(instance || self)
+      else
+        req
+      end
     end
     
     def define_label_for(options)
@@ -36,7 +53,7 @@ module FormToolkit::LabelFor
       @label_for ||= { }
       
       case (method)
-      when Array:
+      when Array
         key = method.collect { |v| "[#{v}]" }.to_s.to_sym
         label = method.last.to_s.titleize
       else
@@ -51,6 +68,10 @@ module FormToolkit::LabelFor
   module InstanceMethods
     def label_for(method)
       self.class.label_for(method)
+    end
+
+    def required_field?(field)
+      self.class.required_field?(field, self)
     end
   end
 end

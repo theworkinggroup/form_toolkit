@@ -364,7 +364,7 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
   end
 
   def required?
-    @object.class.required_field?(@method)
+    @object.required_field?(@method)
   end
 
   def errors?
