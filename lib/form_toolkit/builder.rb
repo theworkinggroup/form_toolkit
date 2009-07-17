@@ -189,15 +189,15 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
     with_partial_wrapper(method, options) do
       with_input_wrapper do
         [
+          @template.hidden_field_tag(
+            model_input_name(method),
+            0
+          ),
           @template.check_box_tag(
             model_input_name(method),
             1,
             resolve_method_to_value(method),
             check_box_options(method, options)
-          ),
-          @template.hidden_field_tag(
-            model_input_name(method),
-            0
           )
         ]
       end
@@ -480,13 +480,14 @@ protected
   def with_partial_wrapper(method, options = { }, &block)
     @method = method
     @name = model_input_name(@method)
-    @element = yield
     @label = options.delete(:label)
     @label = @object.label_for(@method) if (@label.nil?)
     
     _partial = options.delete(:partial)
     _partial = @partial if (_partial.nil?)
     
+    @element = yield
+
     _partial ? @template.render(:partial => _partial, :object => self) : @template.render(:text => @element)
   end
   
