@@ -151,7 +151,8 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
   
   # -- Input Fields ---------------------------------------------------------
   
-  def label_for(method, verbiage = nil, options = { }, &block)
+  def label_for(method = nil, verbiage = nil, options = { }, &block)
+    method ||= @method
     options = {
       :id => @object.dom_id([ method, :label ]),
       :for => @object.dom_id(method)
@@ -159,7 +160,7 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
     
     block_given? ?
       @template.content_tag(:label, options, &block) :
-      @template.content_tag(:label, verbiage || method.to_s.titleize, options)
+      @template.content_tag(:label, verbiage || @object.label_for(method) || method.to_s.titleize, options)
   end
 
   def field(method, options = { })
