@@ -77,20 +77,22 @@ module FormToolkit::UrlFor
     end
 
     def url_for(action = nil, options = { })
+      if (action.is_a?(Hash))
+        options = action
+        action = nil
+      end
+      
       url_params =
-        case (self.new_record?)
-        when true
+        self.new_record? ?
           {
             :controller => self.class.controller_for,
             :action => (action || :create).to_s
-          }
-        else
+          } :
           {
             :controller => self.class.controller_for,
             :action => (action || :show).to_s,
             :id => self.to_param
           }
-        end
 
       if (_options = url_for_options)
         url_params.merge!(url_for_options)
