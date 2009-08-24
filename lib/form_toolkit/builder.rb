@@ -259,7 +259,9 @@ class FormToolkit::Builder < ActionView::Helpers::FormBuilder
   alias_method :select, :select_field
 
   def submit(label = nil, options = { }, &block)
-    @template.content_tag(:div, :class => 'submit_type form_element') do
+    @type = :submit
+    
+    with_partial_wrapper(:submit, { :label => false }.merge(options)) do
       [
         @template.submit_tag(
           label,
